@@ -103,8 +103,10 @@ def send_ntfy(topic, title, text, naik):
 def main():
     topic = os.getenv("NTFY_TOPIC", "")
     key = os.getenv("TWELVEDATA_KEY", "")
-    if time.gmtime().tm_wday == 5 and not os.getenv("UJI"):                         # Sabtu UTC: pasar tutup
-        print("Sabtu, pasar emas tutup")
+    g = time.gmtime()                                   # emas tutup Jumat 21:00 UTC s/d Minggu 22:00 UTC
+    tutup = g.tm_wday == 5 or (g.tm_wday == 4 and g.tm_hour >= 21) or (g.tm_wday == 6 and g.tm_hour < 22)
+    if tutup and not os.getenv("UJI"):
+        print("Akhir pekan, pasar emas tutup")
         return
     detik = time.time() % 300                     # dipicu tepat saat candle close? tunggu data matang
     if detik < 12:
