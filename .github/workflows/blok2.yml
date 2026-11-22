@@ -2,8 +2,8 @@ name: Alarm Blok2Candle M5
 
 on:
   schedule:
-    - cron: "*/5 * * * 0-5"     # tiap 5 menit, Minggu-Jumat (UTC)
-  workflow_dispatch:             # tombol "Run workflow" untuk uji manual
+    - cron: "*/10 * * * 0-5"    # cadangan tiap 10 menit (Minggu-Jumat UTC); pemicu utama = cron-job.org
+  workflow_dispatch:             # dipanggil cron-job.org tiap candle M5 close + tombol "Run workflow"
 
 permissions:
   contents: write                # untuk menyimpan state.json (cegah alarm dobel)
