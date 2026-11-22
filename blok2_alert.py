@@ -31,7 +31,7 @@ def get_json(url):
 
 
 def data_twelve(key):
-    d = get_json("https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=5min&outputsize=300"
+    d = get_json("https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=5min&outputsize=120"
                  "&timezone=UTC&apikey=" + urllib.parse.quote(key))
     if "values" not in d:
         raise RuntimeError("TwelveData: " + str(d.get("message", d))[:200])
@@ -106,11 +106,20 @@ def main():
     if time.gmtime().tm_wday == 5 and not os.getenv("UJI"):                         # Sabtu UTC: pasar tutup
         print("Sabtu, pasar emas tutup")
         return
-    try:
-        rows, src = data_twelve(key) if key else data_yahoo()
-    except Exception as e:
-        print("Gagal ambil data utama:", e)
-        rows, src = data_yahoo()
+    detik = time.time() % 300                     # dipicu tepat saat candle close? tunggu data matang
+    if detik < 12:
+        time.sleep(12 - detik)
+    harap = int(time.time() // 300) * 300 - 300   # waktu buka candle terakhir yang mestinya sudah close
+    for coba in range(3):
+        try:
+            rows, src = data_twelve(key) if key else data_yahoo()
+        except Exception as e:
+            print("Gagal ambil data utama:", e)
+            rows, src = data_yahoo()
+        if not key or rows[-1][0] >= harap or coba == 2:
+            break
+        print("Data candle terakhir belum masuk, ulang 10 detik lagi")
+        time.sleep(10)
     state = {"last": 0}
     if os.path.exists(STATE):
         with open(STATE, encoding="utf-8") as f:
